@@ -28,7 +28,7 @@
       "sfm",
       "kebab-case"
     ],
-    "eofline": true,
+    "eofline": false,
     "import-blacklist": [
       true,
       "rxjs/Rx"
