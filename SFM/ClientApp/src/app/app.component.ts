@@ -26,7 +26,7 @@ export class AppComponent {
           name: 'Home',
           icon: 'home',
           action: () => {
-            return;
+            this.router.navigate(['home']).then();
           },
           loggedIn: true
         },
@@ -60,7 +60,6 @@ export class AppComponent {
   ) {
     this.spotify.getUser().then();
     this.spotify.userChange.subscribe((user: ISpotifyUser) => {
-      console.log(user);
       this.navGroup = this.navGroup.filter(group => {
         group.items = group.items.filter(item => item.loggedIn);
         return group.items.length > 0;

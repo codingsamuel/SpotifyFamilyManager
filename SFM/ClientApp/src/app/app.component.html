@@ -11,9 +11,11 @@
   </mat-drawer>
   <mat-drawer-content>
     <mat-toolbar color="primary">
+      <button mat-icon-button (click)="drawer.toggle()" style="margin-right: 10px;">
+        <mat-icon>menu</mat-icon>
+      </button>
       <h1>SFM</h1>
     </mat-toolbar>
-    <button (click)="drawer.toggle()">Toggle</button>
     <router-outlet></router-outlet>
   </mat-drawer-content>
 </mat-drawer-container>

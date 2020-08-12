@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { SpotifyService } from '../../services/spotify.service';
+import { ISpotifyUser } from '../../models/spotify-user';
 
 @Component({
   selector: 'sfm-home',
@@ -7,11 +9,20 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HomeComponent implements OnInit {
 
-  accountActive: boolean;
+  public user: ISpotifyUser;
 
-  constructor() { }
+  constructor(
+    private spotify: SpotifyService
+  ) {
+  }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
+    // this.spotify.getUser().then();
+    this.loadData().then();
+  }
+
+  public async loadData(): Promise<void> {
+    this.user = await this.spotify.getUser();
   }
 
 }

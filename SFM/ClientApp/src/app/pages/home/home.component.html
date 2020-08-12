@@ -1,6 +1,8 @@
-<div class="container">
+<div *ngIf="user" class="container">
   <h1>Hi,</h1>
-  <p>username</p>
+  <p>{{user.id}}</p>
+
+  <img [src]="user.images[0].url">
 
   <mat-card>
     Not active
