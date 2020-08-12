@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { NavGroup } from './models/nav-item';
+import { Router } from '@angular/router';
+import { SpotifyService } from './services/spotify.service';
+import { ISpotifyUser } from './models/spotify-user';
 
 @Component({
   selector: 'sfm-root',
@@ -8,16 +11,62 @@ import { NavGroup } from './models/nav-item';
 })
 export class AppComponent {
 
-  navGroup: NavGroup = {
-    name: 'General',
-    items: [
-      {
-        name: 'Sprache',
-        action: () => {
-          return;
+  public navGroup: NavGroup[] = [
+    {
+      name: 'General',
+      items: [
+        {
+          name: 'Login',
+          icon: 'login',
+          action: () => {
+            this.router.navigate(['login']).then();
+          },
+        },
+        {
+          name: 'Home',
+          icon: 'home',
+          action: () => {
+            return;
+          },
+          loggedIn: true
+        },
+        {
+          name: 'Abonnement',
+          icon: 'payment',
+          action: () => {
+            return;
+          },
+          loggedIn: true
         }
-      }
-    ]
-  };
+      ],
+    },
+    {
+      name: 'Einstellungen',
+      items: [
+        {
+          name: 'Sprache',
+          icon: 'translate',
+          action: () => {
+            return;
+          },
+        },
+      ]
+    }
+  ];
+
+  constructor(
+    private router: Router,
+    private spotify: SpotifyService
+  ) {
+    this.spotify.getUser().then();
+    this.spotify.userChange.subscribe((user: ISpotifyUser) => {
+      console.log(user);
+      this.navGroup = this.navGroup.filter(group => {
+        group.items = group.items.filter(item => item.loggedIn);
+        return group.items.length > 0;
+      });
+    });
+  }
+
 
 }

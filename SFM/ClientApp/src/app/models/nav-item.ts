@@ -1,10 +1,11 @@
 ﻿export class NavGroup {
-  name: string;
-  items: NavItem[];
+  public name: string;
+  public items: NavItem[];
 }
 
 export class NavItem {
-  name: string;
-  action: () => void;
-  icon?: string;
+  public name: string;
+  public action: () => void;
+  public icon?: string;
+  public loggedIn?: boolean;
 }

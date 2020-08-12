@@ -4,12 +4,11 @@
 */
 
 @import '~@angular/material/theming';
+@import "vars";
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 
 // Fonts
-//@import 'https://fonts.googleapis.com/css?family=Material+Icons';
-//@import '../assets/fonts/Roboto/fonts';
 
 $fontConfig: (
   display-4: mat-typography-level(112px, 112px, 300, 'Roboto', -0.0134em),
@@ -147,7 +146,7 @@ $mat-dark-theme-background: (
 // Theme Config
 
 body {
-  --primary-color: #1db954;
+  --primary-color: $primary;
   --primary-lighter-color: #bbeacc;
   --primary-darker-color: #11a23a;
   --text-primary-color: #{$light-primary-text};
@@ -156,7 +155,7 @@ body {
 }
 
 $mat-primary: (
-  main: #1db954,
+  main: $primary,
   lighter: #bbeacc,
   darker: #11a23a,
   200: #1db954, // For slide toggle,
@@ -169,7 +168,7 @@ $mat-primary: (
 $theme-primary: mat-palette($mat-primary, main, lighter, darker);
 
 body {
-  --accent-color: #4df121;
+  --accent-color: $accent;
   --accent-lighter-color: #cafbbc;
   --accent-darker-color: #34eb14;
   --text-accent-color: #{$dark-primary-text};
@@ -178,7 +177,7 @@ body {
 }
 
 $mat-accent: (
-  main: #4df121,
+  main: $accent,
   lighter: #cafbbc,
   darker: #34eb14,
   200: #4df121, // For slide toggle,

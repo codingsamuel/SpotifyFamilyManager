@@ -9,7 +9,7 @@
     },
     "array-type": false,
     "arrow-return-shorthand": true,
-    "curly": true,
+    "curly": false,
     "deprecation": {
       "severity": "warning"
     },
@@ -94,6 +94,8 @@
         "named": "never"
       }
     },
+    "member-access": [true, "check-accessor"],
+    "typedef": [true, "call-signature"],
     "typedef-whitespace": {
       "options": [
         {

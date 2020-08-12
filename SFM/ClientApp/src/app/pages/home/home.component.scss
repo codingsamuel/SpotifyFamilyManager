@@ -1,0 +1,7 @@
+@import "../../../theme/vars";
+
+mat-card {
+  &.error {
+    background: $danger;
+  }
+}
