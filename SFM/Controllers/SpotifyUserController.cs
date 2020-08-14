@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using SFM.Models;
 
 namespace SFM.Controllers
@@ -20,9 +22,9 @@ namespace SFM.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Get()
+        public async Task<ActionResult<List<SpotifyUser>>> Get()
         {
-            
+            return Ok(await _context.SpotifyUsers.ToListAsync());
         }
         
         [HttpPost]
@@ -30,12 +32,13 @@ namespace SFM.Controllers
         {
             try
             {
-                
+                await _context.SpotifyUsers.AddAsync(spotifyUser);
+                await _context.SaveChangesAsync();
+                return Ok();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                throw;
+                return BadRequest(ex.Message);
             }
         }
     }

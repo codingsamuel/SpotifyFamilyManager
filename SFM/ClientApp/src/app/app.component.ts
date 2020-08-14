@@ -34,7 +34,7 @@ export class AppComponent {
           name: 'Abonnement',
           icon: 'payment',
           action: () => {
-            return;
+            this.router.navigate(['subscription']).then();
           },
           loggedIn: true
         }
