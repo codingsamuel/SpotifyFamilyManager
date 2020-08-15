@@ -9,6 +9,8 @@ namespace SFM.Models
 
         public DbSet<Subscription> Subscriptions { get; set; }
 
+        public DbSet<Config> Configs { get; set; }
+        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
