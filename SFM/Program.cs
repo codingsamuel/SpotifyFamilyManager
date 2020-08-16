@@ -10,7 +10,6 @@ namespace SFM
         {
             using var context = new ApplicationDbContext();
             context.Database.EnsureCreated();
-            
             CreateHostBuilder(args).Build().Run();
         }
 

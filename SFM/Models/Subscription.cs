@@ -17,12 +17,10 @@ namespace SFM.Models
         public int PaymentInterval { get; set; }
 
         [Required]
-        public decimal Price { get; set; }
-
-        [Required]
+        public double Price { get; set; }
+        
         public DateTime LastPayment { get; set; }
-
-        [Required]
+        
         public string Token { get; set; }
 
         [Required]

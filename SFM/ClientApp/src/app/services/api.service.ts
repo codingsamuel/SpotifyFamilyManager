@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ISpotifyToken } from '../models/spotfy-token.model';
 
-export type HttpMethod = 'get' | 'patch' | 'post' | 'delete';
+export type HttpMethod = 'GET' | 'PATCH' | 'POST' | 'DELETE';
 
 @Injectable({
   providedIn: 'root'
@@ -38,7 +38,7 @@ export class ApiService {
     }
   }
 
-  public async makeRequest<T>(method: HttpMethod = 'get', url: string, data?: any, headers?: HttpHeaders, noAuth?: boolean): Promise<T> {
+  public async makeRequest<T>(method: HttpMethod = 'GET', url: string, data?: any, headers?: HttpHeaders, noAuth?: boolean): Promise<T> {
     headers = ApiService.getHeaders(headers);
 
     if (headers.get('Content-Type') === 'application/x-www-form-urlencoded') {
@@ -58,11 +58,11 @@ export class ApiService {
     }
 
     switch (method) {
-      case 'post':
+      case 'POST':
         return this.http.post<T>(url, data, {headers}).toPromise();
-      case 'patch':
+      case 'PATCH':
         return this.http.patch<T>(url, data, {headers}).toPromise();
-      case 'delete':
+      case 'DELETE':
         return this.http.delete<T>(url, {headers}).toPromise();
       default:
         return this.http.get<T>(url, {headers}).toPromise();
