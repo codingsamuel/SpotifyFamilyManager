@@ -1,0 +1,51 @@
+:host {
+  padding: 20px;
+}
+
+.title {
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+.description {
+  color: gray;
+  font-style: italic;
+}
+
+hr {
+  margin-bottom: 20px;
+  border-color: gray;
+}
+
+.wrapper {
+  width: 800px;
+  margin: 0 auto;
+}
+
+.next-btn {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.plan-wrapper {
+  margin: 0 -10px;
+}
+
+.plan {
+  border: 1px solid gray;
+  margin: 0 10px;
+}
+
+.price {
+  text-align: center;
+  font-size: 30px;
+  font-weight: bold;
+  color: #4df121;
+}
+
+.paypal-btn {
+  background: rgb(2, 48, 133);
+  background: linear-gradient(50deg, rgba(2, 48, 133, 1) 0%, rgba(6, 154, 216, 1) 100%);
+}

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'sfm-subscription',
@@ -7,9 +8,25 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SubscriptionComponent implements OnInit {
 
-  constructor() { }
+  public formGroup: FormGroup;
 
-  ngOnInit(): void {
+  constructor() {
+    this.formGroup = new FormGroup({
+      address: new FormGroup({
+        street: new FormControl(null, [Validators.required]),
+        number: new FormControl(null, [Validators.required]),
+        postcode: new FormControl(null, [Validators.required]),
+        city: new FormControl(null, [Validators.required])
+      }),
+      plan: new FormGroup({})
+    });
+  }
+
+  public ngOnInit(): void {
+  }
+
+  public async proceedPayment(): Promise<void> {
+
   }
 
 }
