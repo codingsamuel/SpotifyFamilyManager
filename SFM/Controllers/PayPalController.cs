@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using PayPal;
 using PayPal.Api;
 using SFM.Models;
@@ -62,7 +60,7 @@ namespace SFM.Controllers
                 {"clientId", payPalConfig.ClientId},
                 {"clientSecret", payPalConfig.Secret},
                 {"mode", payPalConfig.Mode},
-                {"business", "codingsamuel-facilitator@gmail.com"},
+                {"business", "codingsamuel-facilitator@gmail.com"}
             };
 
             var credential = new OAuthTokenCredential(config);
@@ -80,7 +78,7 @@ namespace SFM.Controllers
                 type = "fixed",
                 payment_definitions = new List<PaymentDefinition>
                 {
-                    new PaymentDefinition()
+                    new PaymentDefinition
                     {
                         name = "Spotify Family",
                         type = "regular",
@@ -116,7 +114,7 @@ namespace SFM.Controllers
 
         private ShippingAddress CreateShippingAddress()
         {
-            return new ShippingAddress()
+            return new ShippingAddress
             {
                 line1 = "Schölerbergstr. 36",
                 city = "Osnabrueck",
@@ -128,7 +126,7 @@ namespace SFM.Controllers
 
         private Agreement CreateAgreement(string planId, Address address)
         {
-            return new Agreement()
+            return new Agreement
             {
                 name = "Spotify Family Agreement",
                 description = "Spotify Family Abonnement von Samuel Moutinho",
@@ -144,9 +142,9 @@ namespace SFM.Controllers
 
         private PatchRequest CreatePatchRequest()
         {
-            return new PatchRequest()
+            return new PatchRequest
             {
-                new Patch()
+                new Patch
                 {
                     op = "replace",
                     path = "/",
@@ -164,10 +162,7 @@ namespace SFM.Controllers
             while (links.MoveNext())
             {
                 var link = links.Current;
-                if (link != null && link.rel.ToLower().Trim().Equals("approval_url"))
-                {
-                    return link.href;
-                }
+                if (link != null && link.rel.ToLower().Trim().Equals("approval_url")) return link.href;
             }
 
             return null;
@@ -180,7 +175,7 @@ namespace SFM.Controllers
             {
                 var apiContext = await GetApiContext();
 
-                var agreement = new Agreement() {token = token};
+                var agreement = new Agreement {token = token};
                 var executedAgreement = agreement.Execute(apiContext);
 
                 var dbSubscription = await _context.Subscriptions.FirstOrDefaultAsync(s => s.SpotifyUserId == userId);
