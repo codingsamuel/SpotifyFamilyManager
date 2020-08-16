@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { NavGroup } from './models/nav-item';
 import { Router } from '@angular/router';
 import { SpotifyService } from './services/spotify.service';
-import { ISpotifyUser } from './models/spotify-user';
+import { SpotifyUser } from './models/spotify-user';
+import { LoaderService } from './services/loader.service';
 
 @Component({
   selector: 'sfm-root',
@@ -56,10 +57,11 @@ export class AppComponent {
 
   constructor(
     private router: Router,
-    private spotify: SpotifyService
+    private spotify: SpotifyService,
+    public loader: LoaderService,
   ) {
     this.spotify.getUser().then();
-    this.spotify.userChange.subscribe((user: ISpotifyUser) => {
+    this.spotify.userChange.subscribe((user: SpotifyUser) => {
       this.navGroup = this.navGroup.filter(group => {
         group.items = group.items.filter(item => item.loggedIn);
         return group.items.length > 0;

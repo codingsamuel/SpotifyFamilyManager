@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,18 +18,18 @@ namespace SFM.Controllers
         }
 
         [HttpGet("{userId}/[action]")]
-        public async Task<ActionResult<DateTime>> NextPayment([FromRoute]long userId)
+        public async Task<ActionResult<DateTime>> NextPayment([FromRoute] long userId)
         {
             try
             {
                 var dbUser = await _context.SpotifyUsers.FirstOrDefaultAsync(u => u.Id == userId);
                 if (dbUser == null)
                     return NotFound();
-                
+
                 var dbSubscription = await _context.Subscriptions.FirstOrDefaultAsync(s => s.SpotifyUserId == userId);
                 if (dbSubscription == null)
                     return NotFound();
-                
+
                 // Calculate last payment
                 var date = DateTime.Now;
                 var span = DateTime.Now - dbSubscription.LastPayment;
@@ -59,7 +55,7 @@ namespace SFM.Controllers
                 {
                     user.Created = DateTime.Now;
                     user.Updated = DateTime.Now;
-                    await _context.SpotifyUsers.AddAsync(user);   
+                    await _context.SpotifyUsers.AddAsync(user);
                 }
                 else
                 {
@@ -67,9 +63,9 @@ namespace SFM.Controllers
                     user.Id = dbUser.Id;
                     dbUser = user;
                 }
-                
+
                 await _context.SaveChangesAsync();
-                return Ok();
+                return Ok(dbUser);
             }
             catch (Exception ex)
             {

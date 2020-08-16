@@ -95,8 +95,12 @@
       </form>
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Done</ng-template>
+      <ng-template matStepLabel>Pay</ng-template>
       <p>You are now done. Proceed to checkout.</p>
+      <div id="paypal-button-container"></div>
+      <script data-sdk-integration-source="button-factory"
+              src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+
       <button (click)="proceedPayment()" class="paypal-btn" mat-raised-button>Pay with PayPal</button>
     </mat-step>
   </mat-vertical-stepper>

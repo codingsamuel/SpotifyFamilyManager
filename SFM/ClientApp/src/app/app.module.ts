@@ -11,25 +11,30 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatRippleModule } from '@angular/material/core';
 import { HttpClientModule } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { LoaderModule } from './components/loader/loader.module';
+import { LoggerComponent } from './components/logger/logger.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    LoggerComponent
   ],
-    imports: [
-        BrowserModule,
-        HttpClientModule,
-        AppRoutingModule,
-        BrowserAnimationsModule,
-        MatSidenavModule,
-        MatToolbarModule,
-        MatListModule,
-        MatIconModule,
-        MatRippleModule,
-        MatButtonModule,
-    ],
-  providers: [
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    MatListModule,
+    MatIconModule,
+    MatRippleModule,
+    MatButtonModule,
+    MatSnackBarModule,
+    LoaderModule
   ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {

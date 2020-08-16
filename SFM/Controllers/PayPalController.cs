@@ -8,6 +8,7 @@ using PayPal;
 using PayPal.Api;
 using SFM.Models;
 using SFM.Models.PayPal;
+using SFM.Models.ViewModels;
 
 namespace SFM.Controllers
 {
@@ -179,6 +180,10 @@ namespace SFM.Controllers
                 var executedAgreement = agreement.Execute(apiContext);
 
                 var dbSubscription = await _context.Subscriptions.FirstOrDefaultAsync(s => s.SpotifyUserId == userId);
+
+                if (dbSubscription == null)
+                    return NotFound();
+
                 dbSubscription.Active = true;
                 dbSubscription.LastPayment = DateTime.Now;
 
@@ -229,7 +234,7 @@ namespace SFM.Controllers
                 if (string.IsNullOrEmpty(link))
                     return BadRequest("Could not generate link...");
 
-                return Ok(link);
+                return Ok(new PayPalSubscribeViewModel(link, createdAgreement.token));
             }
             catch (Exception ex)
             {

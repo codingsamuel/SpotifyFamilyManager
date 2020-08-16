@@ -15,13 +15,16 @@ const SCOPES = 'user-read-private user-read-email';
 })
 export class SpotifyService {
 
-  public userChange: Subject<ISpotifyUser>;
-  private user: ISpotifyUser;
+  public userChange: Subject<SpotifyUser>;
+  private user: SpotifyUser;
 
   constructor(
     private api: ApiService
   ) {
-    this.userChange = new Subject<ISpotifyUser>();
+    this.userChange = new Subject<SpotifyUser>();
+    this.userChange.subscribe(user => {
+      this.user = user;
+    });
   }
 
   public login(): void {
@@ -63,18 +66,16 @@ export class SpotifyService {
     return false;
   }
 
-  public async getUser(): Promise<ISpotifyUser> {
+  public async getUser(): Promise<SpotifyUser> {
     if (this.user) return this.user;
-    return this.api.makeRequest<ISpotifyUser>('GET', 'https://api.spotify.com/v1/me').then(user => {
-      this.userChange.next(user);
-      return user;
-    }, async () => {
+    return this.api.makeRequest<ISpotifyUser>('GET', 'https://api.spotify.com/v1/me', async () => {
       if (await this.refreshToken()) {
         await this.getUser();
       }
     }).then(async (user: ISpotifyUser) => {
-      await this.api.makeRequest<SpotifyUser>('POST', `api/SpotifyUser`, new SpotifyUser(user));
-      return user;
+      const spotifyUser = await this.api.makeRequest<SpotifyUser>('POST', `api/SpotifyUser`, new SpotifyUser(user));
+      this.userChange.next(spotifyUser);
+      return spotifyUser;
     });
   }
 
