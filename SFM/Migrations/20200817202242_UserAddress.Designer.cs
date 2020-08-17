@@ -4,35 +4,38 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SFM.Models;
 
 namespace SFM.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200816085743_ConfigId")]
-    partial class ConfigId
+    [Migration("20200817202242_UserAddress")]
+    partial class UserAddress
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
                 .HasAnnotation("ProductVersion", "3.1.3")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             modelBuilder.Entity("SFM.Models.Config", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Key")
                         .IsRequired()
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasMaxLength(100);
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("character varying(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("Id");
@@ -44,13 +47,14 @@ namespace SFM.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ApiUrl")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
@@ -75,7 +79,7 @@ namespace SFM.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Updated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Uri")
                         .HasColumnType("text");
@@ -89,25 +93,25 @@ namespace SFM.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<bool>("Active")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastPayment")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("PaymentInterval")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18, 2)");
+                    b.Property<double>("Price")
+                        .HasColumnType("double precision");
 
                     b.Property<long>("SpotifyUserId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Token")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -117,7 +121,45 @@ namespace SFM.Migrations
                     b.ToTable("Subscriptions");
                 });
 
+            modelBuilder.Entity("SFM.Models.UserAddress", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("City")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Number")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PostCode")
+                        .HasColumnType("text");
+
+                    b.Property<long>("SpotifyUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Street")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpotifyUserId");
+
+                    b.ToTable("UserAddresses");
+                });
+
             modelBuilder.Entity("SFM.Models.Subscription", b =>
+                {
+                    b.HasOne("SFM.Models.SpotifyUser", "SpotifyUser")
+                        .WithMany()
+                        .HasForeignKey("SpotifyUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SFM.Models.UserAddress", b =>
                 {
                     b.HasOne("SFM.Models.SpotifyUser", "SpotifyUser")
                         .WithMany()

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SpotifyService } from '../../services/spotify.service';
-import { ISpotifyUser } from '../../models/spotify-user';
+import { SpotifyUser } from '../../models/spotify-user';
 
 @Component({
   selector: 'sfm-home',
@@ -9,7 +9,7 @@ import { ISpotifyUser } from '../../models/spotify-user';
 })
 export class HomeComponent implements OnInit {
 
-  public user: ISpotifyUser;
+  public user: SpotifyUser;
 
   constructor(
     private spotify: SpotifyService

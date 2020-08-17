@@ -1,3 +1,5 @@
+@import "../../../theme/vars";
+
 :host {
   padding: 20px;
 }
@@ -36,6 +38,23 @@ hr {
 .plan {
   border: 1px solid gray;
   margin: 0 10px;
+  cursor: pointer;
+  transition: .3s;
+
+  &.active {
+    border-color: $primary;
+    background: rgba($primary, .1);
+  }
+
+  &:hover {
+    background: #525151;
+  }
+
+  .card-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .price {
@@ -48,4 +67,15 @@ hr {
 .paypal-btn {
   background: rgb(2, 48, 133);
   background: linear-gradient(50deg, rgba(2, 48, 133, 1) 0%, rgba(6, 154, 216, 1) 100%);
+}
+
+.disabled {
+  opacity: .5;
+  pointer-events: none;
+}
+
+.warning {
+  background: $warning;
+  color: white;
+  margin-bottom: 20px;
 }

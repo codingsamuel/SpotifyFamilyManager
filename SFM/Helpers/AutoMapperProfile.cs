@@ -10,6 +10,8 @@ namespace SFM
         {
             CreateMap<ConfigViewModel, Config>();
             CreateMap<Config, ConfigViewModel>();
+
+            CreateMap<UserAddressViewModel, UserAddress>();
         }
     }
 }

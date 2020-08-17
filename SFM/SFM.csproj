@@ -18,8 +18,8 @@
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.3" />
-        <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.21" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.3"/>
         <PackageReference Include="PayPal.SDK.NETCore" Version="1.9.1.2" />
     </ItemGroup>
 
@@ -31,10 +31,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="ClientApp\src\app\components"/>
+        <Folder Include="ClientApp\src\app\components"/>
       <Folder Include="ClientApp\src\app\pages" />
       <Folder Include="ClientApp\src\app\services" />
       <Folder Include="ClientApp\src\assets\fonts" />
+        <Folder Include="Migrations"/>
     </ItemGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

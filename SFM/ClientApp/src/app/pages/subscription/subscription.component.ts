@@ -5,6 +5,9 @@ import { SpotifyService } from '../../services/spotify.service';
 import { LoggerService, LogType } from '../../services/logger.service';
 import { LoaderService } from '../../services/loader.service';
 import { SpotifyUser } from '../../models/spotify-user';
+import { IPlan } from '../../models/plan';
+import { ISubscriptionResponse } from '../../models/subscription-response';
+import { ISubscription } from '../../models/subscription';
 
 @Component({
   selector: 'sfm-subscription',
@@ -14,6 +17,33 @@ import { SpotifyUser } from '../../models/spotify-user';
 export class SubscriptionComponent implements OnInit {
 
   public formGroup: FormGroup;
+  public subscription: ISubscription;
+  public plans: IPlan[] = [
+    {
+      id: 1,
+      icon: 'elderly',
+      title: 'Alman',
+      subtitle: 'Pay your subscription monthly',
+      price: 2.50,
+      tags: [
+        'monthly'
+      ],
+      interval: 1
+    },
+    {
+      id: 2,
+      icon: 'accessible',
+      title: 'Lazy shit',
+      subtitle: 'Pay your subscription all 4 months',
+      price: 10,
+      tags: [
+        'all 4 months'
+      ],
+      interval: 4
+    }
+  ];
+  public activePlanId: number;
+  private user: SpotifyUser;
 
   constructor(
     private api: ApiService,
@@ -26,40 +56,65 @@ export class SubscriptionComponent implements OnInit {
         street: new FormControl(null, [Validators.required]),
         number: new FormControl(null, [Validators.required]),
         postcode: new FormControl(null, [Validators.required]),
-        city: new FormControl(null, [Validators.required])
+        city: new FormControl(null, [Validators.required]),
+        state: new FormControl(null, [Validators.required])
       }),
-      plan: new FormGroup({})
+      interval: new FormControl(1),
     });
+
+    if (window.localStorage.getItem('subscription_cache')) {
+      const data = JSON.parse(window.localStorage.getItem('subscription_cache'));
+      this.formGroup.patchValue(data);
+      this.activePlanId = this.plans.filter(p => p.interval === data.interval)[0]?.id;
+    }
   }
 
   public ngOnInit(): void {
+    this.loadData().then();
   }
 
   public async proceedPayment(): Promise<void> {
     try {
       this.loader.show();
-      const user: SpotifyUser = await this.spotify.getUser();
-      console.log(user);
-      const url: { link: string, token: string } = await this.api.makeRequest<{ link: string, token }>('POST', `api/paypal/${user.id}/Subscribe`);
+      const url: ISubscriptionResponse = await this.api.makeRequest<ISubscriptionResponse>(
+        'POST', `api/paypal/${this.user.id}/Subscribe`, this.formGroup.getRawValue());
       const win = window.open(url.link);
       const i = setInterval(async () => {
         try {
           if (win?.closed) {
             clearInterval(i);
-            await this.api.makeRequest('POST', `api/paypal/ActivateSubscription/${user.id}/${url.token}`);
-
+            await this.api.makeRequest('POST', `api/paypal/ActivateSubscription/${this.user.id}/${url.token}`);
             this.logger.log(LogType.Success, 'Subscription added');
             this.loader.hide();
+            await this.loadData();
           }
         } catch (ex) {
           this.loader.hide();
           this.logger.log(LogType.Error, ex);
         }
       }, 1000);
-
     } catch (ex) {
       this.loader.hide();
       this.logger.log(LogType.Error, ex);
+    }
+  }
+
+  public saveLocal(): void {
+    window.localStorage.setItem('subscription_cache', JSON.stringify(this.formGroup.getRawValue()));
+  }
+
+  public selectPlan(plan: IPlan): void {
+    this.formGroup.controls.interval.patchValue(plan.interval);
+    this.activePlanId = plan.id;
+  }
+
+  private async loadData(): Promise<void> {
+    const user: SpotifyUser = await this.spotify.getUser();
+    this.user = user;
+    this.subscription = await this.api.makeRequest('GET', `api/paypal/Get/${user.id}`);
+
+    if (this.subscription.active) {
+      this.formGroup.disable();
     }
   }
 

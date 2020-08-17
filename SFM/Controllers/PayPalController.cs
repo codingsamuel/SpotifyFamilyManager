@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayPal;
@@ -17,10 +19,22 @@ namespace SFM.Controllers
     public class PayPalController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public PayPalController(ApplicationDbContext context)
+        public PayPalController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
+        }
+
+        private static string Escape(string str)
+        {
+            return str.Replace("Ä", "AE")
+                .Replace("ä", "ae")
+                .Replace("Ö", "OE")
+                .Replace("ö", "oe")
+                .Replace("Ü", "ue")
+                .Replace("ü", "ue");
         }
 
         private async Task<APIContext> GetApiContext()
@@ -70,13 +84,13 @@ namespace SFM.Controllers
             return context;
         }
 
-        private Plan CreatePlan()
+        private Plan CreatePlan(int interval, double price)
         {
             return new Plan
             {
                 name = "Spotify Family",
                 description = "Spotify Family Abonnement von Samuel Moutinho",
-                type = "fixed",
+                type = "infinite",
                 payment_definitions = new List<PaymentDefinition>
                 {
                     new PaymentDefinition
@@ -84,26 +98,26 @@ namespace SFM.Controllers
                         name = "Spotify Family",
                         type = "regular",
                         frequency = "MONTH",
-                        frequency_interval = "1",
+                        frequency_interval = interval.ToString(),
                         amount = new Currency
                         {
                             currency = "EUR",
-                            value = "2.50"
+                            value = price.ToString(CultureInfo.InvariantCulture)
                         },
-                        cycles = "1"
+                        cycles = "0"
                     }
                 }
             };
         }
 
-        private MerchantPreferences CreateMerchantPreferences()
+        private MerchantPreferences CreateMerchantPreferences(double price)
         {
             return new MerchantPreferences
             {
                 setup_fee = new Currency
                 {
                     currency = "EUR",
-                    value = "2.50"
+                    value = price.ToString(CultureInfo.InvariantCulture)
                 },
                 return_url = "https://localhost:5001/payment/success",
                 cancel_url = "https://localhost:5001/payment/cancel",
@@ -113,14 +127,14 @@ namespace SFM.Controllers
             };
         }
 
-        private ShippingAddress CreateShippingAddress()
+        private ShippingAddress CreateShippingAddress(UserAddressViewModel address)
         {
             return new ShippingAddress
             {
-                line1 = "Schölerbergstr. 36",
-                city = "Osnabrueck",
-                state = "Lower Saxony",
-                postal_code = "49082",
+                line1 = $"{Escape(address.Street)} {Escape(address.Number)}",
+                city = Escape(address.City),
+                state = Escape(address.State),
+                postal_code = Escape(address.PostCode),
                 country_code = "DE"
             };
         }
@@ -169,27 +183,48 @@ namespace SFM.Controllers
             return null;
         }
 
+        [HttpGet("[action]/{userId}")]
+        public async Task<ActionResult<Subscription>> Get([FromRoute] long userId)
+        {
+            try
+            {
+                var dbSubscription = await _context.Subscriptions.FirstOrDefaultAsync(s => s.SpotifyUserId == userId);
+                if (dbSubscription == null)
+                    return NotFound();
+
+                return dbSubscription;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("[action]/{userId}/{token}")]
-        public async Task<ActionResult> ActivateSubscription([FromRoute] long userId, [FromRoute] string token)
+        public async Task<ActionResult<Subscription>> ActivateSubscription([FromRoute] long userId,
+            [FromRoute] string token)
         {
             try
             {
                 var apiContext = await GetApiContext();
 
+                // Update agreement
                 var agreement = new Agreement {token = token};
-                var executedAgreement = agreement.Execute(apiContext);
+                agreement.Execute(apiContext);
 
+                // Get subscription
                 var dbSubscription = await _context.Subscriptions.FirstOrDefaultAsync(s => s.SpotifyUserId == userId);
-
                 if (dbSubscription == null)
                     return NotFound();
 
+                // Update subscription
+                dbSubscription.Token = token;
                 dbSubscription.Active = true;
                 dbSubscription.LastPayment = DateTime.Now;
 
                 await _context.SaveChangesAsync();
 
-                return Ok(executedAgreement);
+                return Ok(dbSubscription);
             }
             catch (ConnectionException ex)
             {
@@ -202,34 +237,53 @@ namespace SFM.Controllers
         }
 
         [HttpPost("{userId}/[action]")]
-        public async Task<ActionResult<string>> Subscribe([FromRoute] long userId)
+        public async Task<ActionResult<string>> Subscribe([FromRoute] long userId,
+            [FromBody] SpotifySubscriptionViewModel model)
         {
             try
             {
                 var apiContext = await GetApiContext();
 
-                var plan = CreatePlan();
-                var merchant = CreateMerchantPreferences();
+                // Get config
+                var priceConfig = await _context.Configs.FirstOrDefaultAsync(c => c.Key == Config.SPOTIFY_PRICE);
+                var membersConfig = await _context.Configs.FirstOrDefaultAsync(c => c.Key == Config.SPOTIFY_MEMBERS);
 
+                // Calculate price
+                var totalPrice = double.Parse(priceConfig.Value);
+                var members = int.Parse(membersConfig.Value);
+                var price = totalPrice / members;
+
+                // Create plan
+                var plan = CreatePlan(model.Interval, price);
+                var merchant = CreateMerchantPreferences(price);
                 plan.merchant_preferences = merchant;
                 var createdPlan = plan.Create(apiContext);
-                var patchRequest = CreatePatchRequest();
 
+                var patchRequest = CreatePatchRequest();
                 createdPlan.Update(apiContext, patchRequest);
 
-                var shippingAddress = CreateShippingAddress();
+                // Create agreement
+                var shippingAddress = CreateShippingAddress(model.Address);
                 var agreement = CreateAgreement(createdPlan.id, shippingAddress);
                 var createdAgreement = agreement.Create(apiContext);
 
+                // Get paypal link for checkout
                 var link = GetLink(createdAgreement);
 
+                // Add subscription
                 await _context.Subscriptions.AddAsync(new Subscription
                 {
                     SpotifyUserId = userId,
-                    PaymentInterval = 30,
-                    Price = 2.50,
+                    PaymentInterval = model.Interval,
+                    Price = price,
                     Active = false
                 });
+
+                var address = _mapper.Map<UserAddress>(model.Address);
+                address.SpotifyUserId = userId;
+                await _context.UserAddresses.AddAsync(address);
+
+                await _context.SaveChangesAsync();
 
                 if (string.IsNullOrEmpty(link))
                     return BadRequest("Could not generate link...");
