@@ -1,15 +1,27 @@
 <div *ngIf="user" class="container">
-  <h1>Hi,</h1>
-  <p>{{user.id}}</p>
+  <h1 class="username">{{user.displayName | uppercase}}</h1>
 
-  <img [src]="user.imageUrl">
+  <div [ngStyle]="{ 'background-image': 'url(' + user.imageUrl + ')' }" class="profile-img"></div>
 
-  <mat-card>
-    Not active
+  <mat-card [class.error]="!spotify.subscription?.active" [class.success]="spotify.subscription?.active">
+    <h1>{{(spotify.subscription?.active ? 'sfm.subscription.active' : 'sfm.subscription.not-active') | translate}}!</h1>
+    <p>
+      {{(spotify.subscription?.active ? 'sfm.subscription.active.desc' : 'sfm.subscription.not-active.desc') | translate}}
+    </p>
+    <hr>
+
+    <button *ngIf="!spotify.subscription?.active" class="mt-4" mat-raised-button
+            routerLink="/subscription">{{'sfm.subscription.configure' | translate | uppercase}}</button>
+
+    <div *ngIf="spotify.subscription?.active" class="row">
+      <div class="col-md-6">
+        <h4 class="mb-0">{{ 'sfm.subscription.last-payment' | translate }}</h4>
+        {{ spotify.subscription.lastPayment | date }}
+      </div>
+      <div class="col-md-6">
+        <h4 class="mb-0">{{ 'sfm.subscription.next-payment' | translate }}</h4>
+        {{nextPayment | date}}
+      </div>
+    </div>
   </mat-card>
-
-  <h5>Your Family</h5>
-  <mat-list>
-
-  </mat-list>
 </div>

@@ -12,7 +12,7 @@ export class HomeComponent implements OnInit {
   public user: SpotifyUser;
 
   constructor(
-    private spotify: SpotifyService
+    public spotify: SpotifyService
   ) {
   }
 
@@ -21,8 +21,17 @@ export class HomeComponent implements OnInit {
     this.loadData().then();
   }
 
+  get nextPayment() {
+    const lastPayment = new Date(this.spotify.subscription.lastPayment);
+    const interval = this.spotify.subscription.paymentInterval;
+
+    lastPayment.setMonth(lastPayment.getMonth() + interval);
+    return lastPayment;
+  }
+
   public async loadData(): Promise<void> {
     this.user = await this.spotify.getUser();
+    console.log(await this.spotify.getSubscription());
   }
 
 }

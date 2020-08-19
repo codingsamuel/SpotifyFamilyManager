@@ -184,7 +184,7 @@ namespace SFM.Controllers
         }
 
         [HttpGet("[action]/{userId}")]
-        public async Task<ActionResult<Subscription>> Get([FromRoute] long userId)
+        public async Task<ActionResult<Subscription>> GetSubscription([FromRoute] long userId)
         {
             try
             {

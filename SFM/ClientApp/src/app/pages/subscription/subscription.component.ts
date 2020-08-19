@@ -8,6 +8,7 @@ import { SpotifyUser } from '../../models/spotify-user';
 import { IPlan } from '../../models/plan';
 import { ISubscriptionResponse } from '../../models/subscription-response';
 import { ISubscription } from '../../models/subscription';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'sfm-subscription',
@@ -22,8 +23,8 @@ export class SubscriptionComponent implements OnInit {
     {
       id: 1,
       icon: 'elderly',
-      title: 'Alman',
-      subtitle: 'Pay your subscription monthly',
+      title: 'sfm.subscription.plans.alman',
+      subtitle: 'sfm.subscription.plans.alman.desc',
       price: 2.50,
       tags: [
         'monthly'
@@ -33,8 +34,8 @@ export class SubscriptionComponent implements OnInit {
     {
       id: 2,
       icon: 'accessible',
-      title: 'Lazy shit',
-      subtitle: 'Pay your subscription all 4 months',
+      title: 'sfm.subscription.plans.lazy-shit',
+      subtitle: 'sfm.subscription.plans.lazy-shit.desc',
       price: 10,
       tags: [
         'all 4 months'
@@ -50,6 +51,7 @@ export class SubscriptionComponent implements OnInit {
     private spotify: SpotifyService,
     private logger: LoggerService,
     private loader: LoaderService,
+    private translate: TranslateService,
   ) {
     this.formGroup = new FormGroup({
       address: new FormGroup({
@@ -84,7 +86,7 @@ export class SubscriptionComponent implements OnInit {
           if (win?.closed) {
             clearInterval(i);
             await this.api.makeRequest('POST', `api/paypal/ActivateSubscription/${this.user.id}/${url.token}`);
-            this.logger.log(LogType.Success, 'Subscription added');
+            this.logger.log(LogType.Success, this.translate.instant('sfm.subscription.added'));
             this.loader.hide();
             await this.loadData();
           }
@@ -111,7 +113,7 @@ export class SubscriptionComponent implements OnInit {
   private async loadData(): Promise<void> {
     const user: SpotifyUser = await this.spotify.getUser();
     this.user = user;
-    this.subscription = await this.api.makeRequest('GET', `api/paypal/Get/${user.id}`);
+    this.subscription = await this.api.makeRequest('GET', `api/paypal/GetSubscription/${user.id}`);
 
     if (this.subscription.active) {
       this.formGroup.disable();

@@ -11,6 +11,8 @@ namespace SFM.Models
         public const string PAYPAL_TEST_SECRET = "PAYPAL_TEST_SECRET";
         public const string SPOTIFY_PRICE = "SPOTIFY_PRICE";
         public const string SPOTIFY_MEMBERS = "SPOTIFY_MEMBERS";
+        public const string SPOTIFY_CLIENT_ID = "SPOTIFY_CLIENT_ID";
+        public const string SPOTIFY_CLIENT_SECRET = "SPOTIFY_CLIENT_SECRET";
 
         [Key] public long Id { get; set; }
 

@@ -1,82 +1,84 @@
 <div class="wrapper">
 
   <mat-card *ngIf="subscription?.active" class="warning">
-    <h1>You are already subscribed</h1>
+    <h1>{{'sfm.subscription.already-subscribed' | translate}}</h1>
     <p>
-      You don't have to do anything more...
+      {{'sfm.subscription.already-subscribed.desc' | translate}}
     </p>
   </mat-card>
 
-  <h1 class="title">Subscription</h1>
+  <h1 class="title">{{ 'sfm.common.subscription' | translate }}</h1>
   <p class="description">
-    Manage your subscription here
+    {{ 'sfm.subscription.desc' | translate }}
   </p>
 
   <hr>
 
-  <mat-vertical-stepper #stepper (selectionChange)="saveLocal()" [linear]="true">
+  <mat-vertical-stepper (selectionChange)="saveLocal()" [linear]="true">
     <mat-step [stepControl]="formGroup">
       <form [formGroup]="formGroup">
-        <ng-template matStepLabel>Add your address</ng-template>
+        <ng-template matStepLabel>{{ 'sfm.subscription.form.add-address' | translate }}</ng-template>
         <div formGroupName="address">
           <div class="mt-3 row">
             <mat-form-field appearance="fill" class="col-md-8">
-              <mat-label>Street</mat-label>
+              <mat-label>{{ 'sfm.subscription.form.street' | translate }}</mat-label>
               <input aria-label="Street" autocomplete="off" formControlName="street" matInput
-                     placeholder="Please enter your street..." required>
-              <mat-error>Please add a valid street</mat-error>
+                     placeholder="{{ 'sfm.subscription.form.street.placeholder' | translate }}" required>
+              <mat-error>{{ 'sfm.subscription.form.street.error' | translate }}</mat-error>
             </mat-form-field>
             <mat-form-field appearance="fill" class="col-md-4">
-              <mat-label>Number</mat-label>
+              <mat-label>{{ 'sfm.subscription.form.street-number' | translate }}</mat-label>
               <input aria-label="Number" autocomplete="off" formControlName="number"
-                     matInput placeholder="Please enter your street number..." required>
-              <mat-error>Please add a valid street number</mat-error>
+                     matInput placeholder="{{ 'sfm.subscription.form.street-number.placeholder' | translate }}"
+                     required>
+              <mat-error>{{ 'sfm.subscription.form.street-number' | translate }}</mat-error>
             </mat-form-field>
           </div>
 
           <div class="mt-4 row">
             <mat-form-field appearance="fill" class="col-md-3">
-              <mat-label>Postcode</mat-label>
+              <mat-label>{{ 'sfm.subscription.form.postcode' | translate }}</mat-label>
               <input aria-label="Postcode" autocomplete="off" formControlName="postcode"
-                     matInput placeholder="Please enter your postcode..." required>
-              <mat-error>Please add a valid postcode</mat-error>
+                     matInput placeholder="" required>
+              <mat-error>{{ 'sfm.subscription.form.postcode.error' | translate }}</mat-error>
             </mat-form-field>
             <mat-form-field appearance="fill" class="col-md-9">
-              <mat-label>City</mat-label>
+              <mat-label>{{ 'sfm.subscription.form.city' | translate }}</mat-label>
               <input aria-label="City" autocomplete="off" formControlName="city" matInput
-                     placeholder="Please enter your city..." required>
-              <mat-error>Please add a valid city</mat-error>
+                     placeholder="{{ 'sfm.subscription.form.city.placeholder' | translate }}" required>
+              <mat-error>{{ 'sfm.subscription.form.city.error' | translate }}</mat-error>
             </mat-form-field>
           </div>
 
           <div class="mt-4 row">
             <mat-form-field appearance="fill" class="col-md-12">
-              <mat-label>State</mat-label>
+              <mat-label>{{ 'sfm.subscription.form.state' | translate }}</mat-label>
               <input aria-label="State" autocomplete="off" formControlName="state" matInput
-                     placeholder="Please enter your state..." required>
-              <mat-error>Please add a valid state</mat-error>
+                     placeholder="{{ 'sfm.subscription.form.state.placeholder' | translate }}" required>
+              <mat-error>{{ 'sfm.subscription.form.state.error' | translate }}</mat-error>
             </mat-form-field>
           </div>
         </div>
 
         <div class="mt-4 next-btn">
-          <button color="accent" mat-flat-button matStepperNext>Next</button>
+          <button color="accent" mat-flat-button matStepperNext>{{ 'sfm.common.next' | translate }}</button>
         </div>
       </form>
     </mat-step>
     <mat-step [stepControl]="formGroup">
       <form [formGroup]="formGroup">
-        <ng-template matStepLabel>Choose your plan</ng-template>
+        <ng-template matStepLabel>{{ 'sfm.subscription.form.choose-plan' | translate }}</ng-template>
         <div class="row no-gutters plan-wrapper mt-3">
           <div *ngFor="let plan of plans" class="col">
-            <mat-card (click)="selectPlan(plan)" [class.active]="activePlanId === plan.id" [class.disabled]="subscription?.active"
+            <mat-card (click)="selectPlan(plan)" [class.active]="activePlanId === plan.id"
+                      [class.disabled]="subscription?.active"
                       class="plan">
               <mat-card-header>
                 <div class="card-avatar" mat-card-avatar>
                   <mat-icon>{{plan.icon}}</mat-icon>
                 </div>
-                <mat-card-title>{{plan.title}}</mat-card-title>
-                <mat-card-subtitle>{{plan.subtitle}}</mat-card-subtitle>
+                <mat-card-title>{{plan.title | translate}}</mat-card-title>
+                <mat-card-subtitle>{{plan.subtitle | translate}}</mat-card-subtitle>
               </mat-card-header>
               <mat-card-content>
                 <h1 class="price">{{plan.price.toLocaleString('de-DE', {currency: 'EUR'})}}</h1>
@@ -89,20 +91,22 @@
         </div>
 
         <div class="mt-4 next-btn">
-          <button class="mr-2" color="accent" mat-stroked-button matStepperPrevious>Back</button>
-          <button [disabled]="!activePlanId" color="accent" mat-flat-button matStepperNext>Next</button>
+          <button class="mr-2" color="accent" mat-stroked-button
+                  matStepperPrevious>{{ 'sfm.common.back' | translate }}</button>
+          <button [disabled]="!activePlanId" color="accent" mat-flat-button
+                  matStepperNext>{{ 'sfm.common.next' | translate }}</button>
         </div>
       </form>
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Pay</ng-template>
-      <p>You are now done. Proceed to checkout.</p>
+      <ng-template matStepLabel>{{ 'sfm.subscription.form.pay' | translate }}</ng-template>
+      <p>{{ 'sfm.subscription.form.pay.desc' | translate }}</p>
       <div id="paypal-button-container"></div>
       <script data-sdk-integration-source="button-factory"
               src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
 
-      <button (click)="proceedPayment()" [disabled]="subscription?.active" class="paypal-btn" mat-raised-button>Pay with
-        PayPal
+      <button (click)="proceedPayment()" [disabled]="subscription?.active" class="paypal-btn" mat-raised-button>
+        {{ 'sfm.subscription.form.pay-with-paypal' | translate }}
       </button>
     </mat-step>
   </mat-vertical-stepper>

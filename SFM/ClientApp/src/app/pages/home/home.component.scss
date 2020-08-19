@@ -1,7 +1,36 @@
 @import "../../../theme/vars";
 
+:host {
+  padding: 20px;
+}
+
 mat-card {
+  margin-top: 35px;
+
   &.error {
     background: $danger;
   }
+
+  &.success {
+    background: $primary;
+  }
+}
+
+.username {
+  display: table;
+  text-align: center;
+  margin: 0 auto 20px;
+  padding: 20px;
+  letter-spacing: 15px;
+  font-weight: 100;
+}
+
+.profile-img {
+  display: block;
+  margin: 0 auto;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-size: cover;
 }
