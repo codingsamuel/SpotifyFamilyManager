@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -30,13 +31,14 @@ namespace SFM.Controllers
             {
                 var dbConfig = await _context.Configs
                     .Where(c =>
-                        new[] {Config.SPOTIFY_CLIENT_ID, Config.SPOTIFY_CLIENT_SECRET}.Contains(c.Key))
+                        new[] {Config.BASE_URL, Config.SPOTIFY_CLIENT_ID, Config.SPOTIFY_CLIENT_SECRET}.Contains(c.Key))
                     .ToListAsync();
 
                 return Ok(new SpotifyConfigViewModel
                 {
                     ClientId = dbConfig.FirstOrDefault(c => c.Key == Config.SPOTIFY_CLIENT_ID)?.Value,
-                    ClientSecret = dbConfig.FirstOrDefault(c => c.Key == Config.SPOTIFY_CLIENT_SECRET)?.Value
+                    ClientSecret = dbConfig.FirstOrDefault(c => c.Key == Config.SPOTIFY_CLIENT_SECRET)?.Value,
+                    RedirectUrl = Path.Combine(dbConfig.FirstOrDefault(c => c.Key == Config.BASE_URL)?.Value!, "login")
                 });
             }
             catch (Exception ex)

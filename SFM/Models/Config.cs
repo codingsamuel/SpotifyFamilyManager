@@ -13,6 +13,7 @@ namespace SFM.Models
         public const string SPOTIFY_MEMBERS = "SPOTIFY_MEMBERS";
         public const string SPOTIFY_CLIENT_ID = "SPOTIFY_CLIENT_ID";
         public const string SPOTIFY_CLIENT_SECRET = "SPOTIFY_CLIENT_SECRET";
+        public const string BASE_URL = "BASE_URL";
 
         [Key] public long Id { get; set; }
 

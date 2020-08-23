@@ -7,7 +7,6 @@ import { Subject } from 'rxjs';
 import { ISubscription } from '../models/subscription';
 import { ISpotifyConfig } from '../models/spotify-config';
 
-const REDIRECT_URI = 'https://localhost:5001/login';
 const SCOPES = 'user-read-private user-read-email';
 
 @Injectable({
@@ -37,7 +36,8 @@ export class SpotifyService {
   }
 
   public async login(): Promise<void> {
-    const win = window.open(`https://accounts.spotify.com/authorize?response_type=code&client_id=${this.spotifyConfig.clientId}&scope=${SCOPES}&redirect_uri=${REDIRECT_URI}&show_dialog=true`);
+    const win = window.open(`https://accounts.spotify.com/authorize?response_type=code&client_id=${this.spotifyConfig.clientId}&scope=${SCOPES}&redirect_uri=${
+      this.spotifyConfig.redirectUrl}&show_dialog=true`);
     const i = setInterval(async () => {
       if (win?.closed) {
         clearInterval(i);
@@ -50,7 +50,7 @@ export class SpotifyService {
     return this.api.makeRequest<ISpotifyToken>('POST', `https://accounts.spotify.com/api/token`, {
       grant_type: 'authorization_code',
       code,
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: this.spotifyConfig.redirectUrl,
       client_id: this.spotifyConfig.clientId,
       client_secret: this.spotifyConfig.clientSecret
     }, new HttpHeaders({'Content-Type': 'application/x-www-form-urlencoded'}), true)

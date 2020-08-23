@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using PayPal;
 using PayPal.Api;
 using SFM.Models;
@@ -18,13 +23,17 @@ namespace SFM.Controllers
     [Route("api/[controller]")]
     public class PayPalController : ControllerBase
     {
+        private readonly HttpClient _client;
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<PayPalController> _logger;
         private readonly IMapper _mapper;
 
-        public PayPalController(ApplicationDbContext context, IMapper mapper)
+        public PayPalController(ApplicationDbContext context, IMapper mapper, ILogger<PayPalController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
+            _client = new HttpClient();
         }
 
         private static string Escape(string str)
@@ -41,6 +50,9 @@ namespace SFM.Controllers
         {
             var isDebug = (await _context.Configs.FirstOrDefaultAsync(c => c.Key == Config.DEBUG)).Value == "1";
             PayPalConfig payPalConfig;
+
+            _logger.LogInformation("IS DEBUG: " + JsonConvert.SerializeObject(isDebug));
+
             if (isDebug)
             {
                 var configs = new[] {Config.PAYPAL_TEST_CLIENT_ID, Config.PAYPAL_TEST_SECRET};
@@ -70,17 +82,43 @@ namespace SFM.Controllers
                 };
             }
 
+            _logger.LogInformation("PAYPAL CONFIG: " + JsonConvert.SerializeObject(payPalConfig));
+
             var config = new Dictionary<string, string>
             {
                 {"clientId", payPalConfig.ClientId},
                 {"clientSecret", payPalConfig.Secret},
-                {"mode", payPalConfig.Mode},
-                {"business", "codingsamuel-facilitator@gmail.com"}
+                {"mode", payPalConfig.Mode}
             };
 
-            var credential = new OAuthTokenCredential(config);
-            var accessToken = credential.GetAccessToken();
-            var context = new APIContext {Config = config, AccessToken = accessToken};
+            _logger.LogInformation("DICTIONARY CONFIG: " + JsonConvert.SerializeObject(config));
+
+            // var credential = new OAuthTokenCredential(config);
+
+            // _logger.LogInformation("CREDENTIAL: " + JsonConvert.SerializeObject(credential));
+
+            // var accessToken = credential.GetAccessToken();
+
+            var auth = Convert.ToBase64String(
+                Encoding.UTF8.GetBytes(payPalConfig.ClientId + ":" + payPalConfig.Secret));
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", auth);
+            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                {"grant_type", "client_credentials"}
+            });
+            var request =
+                await _client.PostAsync(
+                    (payPalConfig.Mode == "live" ? "https://api.paypal.com" : "https://api.sandbox.paypal.com") +
+                    "/v1/oauth2/token", content);
+            var response = await request.Content.ReadAsStringAsync();
+
+            _logger.LogInformation("RESPONSE: " + response);
+
+            var token = JsonConvert.DeserializeObject<PayPalAccessTokenViewModel>(response);
+
+            _logger.LogInformation("ACCESS TOKEN: " + token.Access_token);
+
+            var context = new APIContext {Config = config, AccessToken = "Bearer " + token.Access_token};
             return context;
         }
 
@@ -110,8 +148,10 @@ namespace SFM.Controllers
             };
         }
 
-        private MerchantPreferences CreateMerchantPreferences(double price)
+        private async Task<MerchantPreferences> CreateMerchantPreferences(double price)
         {
+            var config = await _context.Configs.FirstOrDefaultAsync(c => c.Key == Config.BASE_URL);
+
             return new MerchantPreferences
             {
                 setup_fee = new Currency
@@ -119,8 +159,8 @@ namespace SFM.Controllers
                     currency = "EUR",
                     value = price.ToString(CultureInfo.InvariantCulture)
                 },
-                return_url = "https://localhost:5001/payment/success",
-                cancel_url = "https://localhost:5001/payment/cancel",
+                return_url = $"{config.Value}payment/success",
+                cancel_url = $"{config.Value}payment/cancel",
                 auto_bill_amount = "YES",
                 initial_fail_amount_action = "CONTINUE",
                 max_fail_attempts = "0"
@@ -244,31 +284,45 @@ namespace SFM.Controllers
             {
                 var apiContext = await GetApiContext();
 
+                _logger.LogInformation("GOT API CONTEXT....");
+
                 // Get config
                 var priceConfig = await _context.Configs.FirstOrDefaultAsync(c => c.Key == Config.SPOTIFY_PRICE);
                 var membersConfig = await _context.Configs.FirstOrDefaultAsync(c => c.Key == Config.SPOTIFY_MEMBERS);
+
+                _logger.LogInformation("GOT CONFIG....");
 
                 // Calculate price
                 var totalPrice = double.Parse(priceConfig.Value);
                 var members = int.Parse(membersConfig.Value);
                 var price = totalPrice / members;
 
+                _logger.LogInformation("GOT PRICE....");
+
                 // Create plan
                 var plan = CreatePlan(model.Interval, price);
-                var merchant = CreateMerchantPreferences(price);
+                var merchant = await CreateMerchantPreferences(price);
                 plan.merchant_preferences = merchant;
                 var createdPlan = plan.Create(apiContext);
 
+                _logger.LogInformation("CREATED PLAN....");
+
                 var patchRequest = CreatePatchRequest();
                 createdPlan.Update(apiContext, patchRequest);
+
+                _logger.LogInformation("ACTIVATED PLAN....");
 
                 // Create agreement
                 var shippingAddress = CreateShippingAddress(model.Address);
                 var agreement = CreateAgreement(createdPlan.id, shippingAddress);
                 var createdAgreement = agreement.Create(apiContext);
 
+                _logger.LogInformation("CREATED AGREEMENT....");
+
                 // Get paypal link for checkout
                 var link = GetLink(createdAgreement);
+
+                _logger.LogInformation("GOT LINK....");
 
                 // Add subscription
                 await _context.Subscriptions.AddAsync(new Subscription
@@ -284,6 +338,8 @@ namespace SFM.Controllers
                 await _context.UserAddresses.AddAsync(address);
 
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("SAVED SUBSCRIPTION....");
 
                 if (string.IsNullOrEmpty(link))
                     return BadRequest("Could not generate link...");

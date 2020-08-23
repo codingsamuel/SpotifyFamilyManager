@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace SFM.Models
 {
@@ -15,7 +16,13 @@ namespace SFM.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseNpgsql("Host=localhost;Database=sfm;Username=postgres;Password=abc123");
+
+            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+            if (isDevelopment)
+                optionsBuilder.UseMySQL("host=localhost;database=sfm;username=root;password=");
+            else
+                optionsBuilder.UseMySQL(
+                    "host=db5000812537.hosting-data.io;database=dbs721306;username=dbu662955;password=1RdF5ghG17Cp!;port=3306");
         }
     }
 }
